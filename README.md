@@ -21,7 +21,7 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | **Memory Lifecycle** | Archive, restore, pin, and manage memory over time |
 | **Temporal Queries** | Ask for memories by time — "yesterday", "last session", "before March" |
 | **Pair Sync** | Share encrypted context with teammates via secure relay (Pro) |
-| **Event Tracking** | Stream structured usage logs to any HTTP endpoint or local collector (Pro) |
+| **Audit & Traceability** | Full observability into every AI memory operation (Pro) |
 | **Tag & Type Filtering** | Organize memories by type (decision, bug, task, question) and custom tags |
 | **Credential Guardrail** | Secrets are never stored — referenced by location only |
 
@@ -33,11 +33,41 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | Shared memory across agents | Yes | Yes | Yes |
 | Hybrid search (FTS5) | — | Yes | Yes |
 | Pair Sync (encrypted sharing) | — | Yes | Yes |
-| Event tracking | — | Yes | Yes |
+| Audit & traceability | — | Yes | Yes |
 | All MCP tools | — | Yes | Yes |
 | Team brain sync | — | — | Yes |
 
 **Free** — download below. **Pro & Teams** — [crowmemory.ai](https://crowmemory.ai)
+
+## Audit & Traceability (Pro / Teams)
+
+Every memory operation — store, recall, delete, update, archive, link, sync — produces a structured JSONL event with full context: who, what, when, and which project. Stream these events to **your own infrastructure** — any HTTP endpoint, SIEM, logging pipeline, or local binary collector.
+
+**You control the data.** CrowMemory does not phone home. Events go where you configure them — your servers, your collectors, your rules.
+
+```toml
+# Example: stream events to your logging infrastructure
+[tracking]
+level = "info"
+exclude_events = ["memory.recalled"]  # optional filtering
+
+[tracking.remote]
+url = "https://your-logging-server.com/ingest"
+authorization = "Bearer your-token"
+headers = { "X-Team" = "engineering", "X-Env" = "production" }
+batch_size = 10
+flush_interval_ms = 5000
+
+[tracking.local]
+command = "/usr/local/bin/your-collector"
+args = ["--format", "json"]
+```
+
+**Use cases:**
+- **AI usage metrics** — measure how agents use memory across teams and projects
+- **Compliance auditing** — prove what AI agents stored, recalled, and deleted
+- **Cost attribution** — track memory operations per team, project, or session
+- **Incident forensics** — trace exactly what an agent knew and when
 
 ## Quick Start
 
