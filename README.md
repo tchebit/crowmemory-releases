@@ -30,12 +30,12 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | | Free | Pro | Teams |
 |---|---|---|---|
 | Semantic memory + knowledge graph | Yes | Yes | Yes |
-| All MCP tools | Yes | Yes | Yes |
+| Shared memory across agents | Yes | Yes | Yes |
 | Hybrid search (FTS5) | — | Yes | Yes |
 | Pair Sync (encrypted sharing) | — | Yes | Yes |
 | Event tracking | — | Yes | Yes |
+| All MCP tools | — | Yes | Yes |
 | Team brain sync | — | — | Yes |
-| Shared memory across agents | — | — | Yes |
 
 **Free** — download below. **Pro & Teams** — [crowmemory.ai](https://crowmemory.ai)
 
