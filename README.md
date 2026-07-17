@@ -18,6 +18,7 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | **Hybrid Search** | Combine semantic and keyword search for precise retrieval (Pro) |
 | **Knowledge Graph** | Link related memories into navigable decision trails |
 | **Agent Profiles** | Save and activate reusable agent personas across sessions |
+| **Pinned Memories** | Mark memories as always-on context, loaded explicitly via `get_pinned` |
 | **Memory Lifecycle** | Archive, restore, pin, and manage memory over time |
 | **Temporal Queries** | Ask for memories by time — "yesterday", "last session", "before March" |
 | **Pair Sync** | Share encrypted context with teammates via secure relay (Pro) |
@@ -31,6 +32,7 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 |---|---|---|---|
 | Semantic memory + knowledge graph | Yes | Yes | Yes |
 | Shared memory across agents | Yes | Yes | Yes |
+| Pinned memories (`pin_memory`, `get_pinned`) | Yes | Yes | Yes |
 | Hybrid search (FTS5) | — | Yes | Yes |
 | Pair Sync (encrypted sharing) | — | Yes | Yes |
 | Audit & traceability | — | Yes | Yes |
@@ -78,6 +80,67 @@ args = ["--format", "json"]
    ```bash
    claude mcp add -s user crow-memory -- crow-memory-mcp
    ```
+
+## Claude Code: Auto-load Pinned Memories on Session Start
+
+`get_pinned` is not injected into `recall` results — it only surfaces pinned context when called explicitly. Claude Code also drops conversation state on `/compact`, `/resume`, and `/clear`, so wiring `get_pinned` into a `SessionStart` hook keeps your agent oriented at every one of those points, not just at first launch. This works on **every edition** — `pin_memory`, `unpin_memory`, and `get_pinned` are all free-tier tools.
+
+### 1. Create the hook script
+
+Save this as `~/.claude/hooks/crow-memory-recall.sh` (user-level, applies to all projects) or `.claude/hooks/crow-memory-recall.sh` (project-level):
+
+```bash
+#!/usr/bin/env bash
+# SessionStart hook — injected into context on startup / resume / compact / clear.
+cat <<'MSG'
+[crow-memory protocol] Before doing anything else:
+1. Call mcp__crow-memory__get_pinned — load pinned context (architecture, conventions, must-know facts).
+2. Before implementing or answering about prior work, call mcp__crow-memory__recall
+   (or mcp__crow-memory__hybrid_recall on Pro/Teams) with project-specific keywords.
+3. After completing a unit of work, store it with mcp__crow-memory__remember_with_metadata
+   and link_memories to related entries.
+Do not ask whether to checkpoint — follow this protocol.
+MSG
+```
+
+Make it executable:
+
+```bash
+chmod +x ~/.claude/hooks/crow-memory-recall.sh
+```
+
+### 2. Register the hook
+
+Add to `~/.claude/settings.json` (user-level) or `.claude/settings.json` (project-level, checked into the repo so it applies to every contributor):
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/crow-memory-recall.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Use a repo-relative path (e.g. `bash .claude/hooks/crow-memory-recall.sh`) instead if the hook script is checked into the project rather than kept at the user level.
+
+### 3. Pin what matters
+
+```
+pin_memory(memory_id: "...")   # mark architecture decisions, conventions, must-know context
+get_pinned()                    # verify what's loaded
+```
+
+Keep the pin list to a curated shortlist — critical guardrails and conventions, not a dump of everything you've ever stored.
 
 ## Community Skills
 

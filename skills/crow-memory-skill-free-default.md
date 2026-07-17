@@ -1,6 +1,6 @@
 # crow-memory-skill-free-default
 
-> Default skill for CrowMemory Free edition — teaches AI agents to use all 14 free tools effectively.
+> Default skill for CrowMemory Free edition — teaches AI agents to use all 17 free tools effectively.
 
 ## When to use
 
@@ -21,6 +21,14 @@ You have access to CrowMemory, a persistent memory system that survives across s
 **Keep memory clean.** When you store an updated version of something already in memory, archive the old version with `archive_memory`. Stale entries pollute future recall results.
 
 **Walk trails when investigating.** When tracing a bug or decision, call `get_related_memories` on any memory you find. Follow the links to build the full picture.
+
+### Pinned memories
+
+**Pin critical context.** Use `pin_memory` for memories that should always be accessible — project conventions, architecture decisions, team agreements, active sprint goals. Pinned memories surface via `get_pinned` without needing a search query; they are not injected into `recall` results automatically.
+
+**Start sessions with pinned context.** At the beginning of a session, call `get_pinned` to load always-relevant context before doing any work. This is the fastest way to recover orientation after a `/compact` or `/clear`, since Claude Code drops conversation state at those points but `get_pinned` reloads it explicitly. See [Auto-load pinned memories with a SessionStart hook](../README.md#claude-code-auto-load-pinned-memories-on-session-start) for wiring this up automatically.
+
+**Keep pins fresh.** Unpin outdated memories with `unpin_memory`. A cluttered pin list defeats the purpose. Pins should be a curated shortlist, not a dump.
 
 ### Memory organization
 
@@ -72,6 +80,8 @@ Each memory has a 10,000 character limit. The embedding model indexes the first 
 - `restore_memory` — recover archived memory
 - `link_memories` — create relationships between memories
 - `get_related_memories` — walk the knowledge graph
+- `pin_memory` / `unpin_memory` — mark a memory as always-relevant
+- `get_pinned` — retrieve all pinned memories
 - `init` — initialize CrowMemory in a project
 
 ## Example
