@@ -33,7 +33,7 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | Semantic memory + knowledge graph | Yes | Yes | Yes |
 | Shared memory across agents | Yes | Yes | Yes |
 | Pinned memories (`pin_memory`, `get_pinned`) | Yes | Yes | Yes |
-| Hybrid search (FTS5) | — | Yes | Yes |
+| Hybrid search (semantic + keyword) | — | Yes | Yes |
 | Pair Sync (encrypted sharing) | — | Yes | Yes |
 | Audit & traceability | — | Yes | Yes |
 | All MCP tools | — | Yes | Yes |

@@ -24,7 +24,7 @@ You have access to CrowMemory Pro, a persistent memory system with advanced sear
 
 ### Pro: Hybrid search
 
-**Use hybrid search for exact matches.** When searching for specific identifiers, error codes, function names, or technical terms that must match exactly, use `hybrid_recall` instead of `recall`. It combines vector similarity with keyword search (FTS5) for precise retrieval.
+**Use hybrid search for exact matches.** When searching for specific identifiers, error codes, function names, or technical terms that must match exactly, use `hybrid_recall` instead of `recall`. It combines vector similarity with exact keyword matching for precise retrieval.
 
 **When to use which:**
 - `recall` — conceptual queries: "how does auth work", "database architecture decisions"
