@@ -1,10 +1,10 @@
 # crow-memory-skill-pro-default
 
-> Default skill for CrowMemory Pro edition — extends the free skill with hybrid search, pinned memories, pair sync, and event tracking.
+> Default skill for CrowMemory Pro edition — extends the free skill with hybrid search, pair sync, and event tracking.
 
 ## When to use
 
-This is the baseline skill for any AI agent using CrowMemory Pro or Teams. It includes everything from the free skill plus Pro-exclusive capabilities: hybrid search for precise keyword matching, pinned memories for persistent context, encrypted pair sync for team collaboration, and structured event tracking for observability.
+This is the baseline skill for any AI agent using CrowMemory Pro or Teams. It includes everything from the free skill (pinned memories — `pin_memory`, `unpin_memory`, `get_pinned` — are free-tier tools, see the free skill) plus Pro-exclusive capabilities: hybrid search for precise keyword matching, encrypted pair sync for team collaboration, and structured event tracking for observability.
 
 ## Instructions
 
@@ -32,13 +32,9 @@ You have access to CrowMemory Pro, a persistent memory system with advanced sear
 
 **Fallback strategy.** If `hybrid_recall` returns nothing, fall back to `recall` with broader keywords. If `recall` returns too much noise, switch to `hybrid_recall` with the exact term.
 
-### Pro: Pinned memories
+### Pinned memories (free tier — see free skill for details)
 
-**Pin critical context.** Use `pin_memory` for memories that should always be accessible — project conventions, architecture decisions, team agreements, active sprint goals. Pinned memories surface via `get_pinned` without needing a search query.
-
-**Start sessions with pinned context.** At the beginning of a session, call `get_pinned` to load always-relevant context before doing any work.
-
-**Keep pins fresh.** Unpin outdated memories with `unpin_memory`. A cluttered pin list defeats the purpose. Pins should be a curated shortlist, not a dump.
+Use `pin_memory` / `get_pinned` for always-on context and `unpin_memory` to keep the pin list curated. These are free-tier tools, not Pro-exclusive.
 
 ### Pro: Pair Sync
 
@@ -70,8 +66,8 @@ You have access to CrowMemory Pro, a persistent memory system with advanced sear
 - `archive_memory` / `restore_memory` — soft-delete and recover
 - `forget` — permanent delete
 - `update_memory` — modify text in place
-- `pin_memory` / `unpin_memory` — mark as always-relevant
-- `get_pinned` — retrieve all pinned memories
+- `pin_memory` / `unpin_memory` — mark as always-relevant (free tier)
+- `get_pinned` — retrieve all pinned memories (free tier)
 
 ### Temporal awareness
 
@@ -87,18 +83,18 @@ Never store credentials in memory. Reference by location only.
 
 ## Available tools
 
-**Free tools (14):**
+**Free tools (17):**
 - `remember`, `remember_with_metadata` — store memories
 - `recall`, `recall_by_type`, `recall_by_tag` — search memories
 - `list_memories`, `get_memory` — browse and retrieve
 - `update_memory`, `forget` — modify and delete
 - `archive_memory`, `restore_memory` — lifecycle management
 - `link_memories`, `get_related_memories` — knowledge graph
+- `pin_memory`, `unpin_memory`, `get_pinned` — pinned memory management
 - `init` — project initialization
 
-**Pro tools (6):**
+**Pro tools (3):**
 - `hybrid_recall` — vector + keyword fusion search
-- `pin_memory`, `unpin_memory`, `get_pinned` — pinned memory management
 - `pair_share`, `pair_receive` — encrypted context sharing
 
 ## Example
