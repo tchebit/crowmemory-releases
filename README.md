@@ -76,10 +76,62 @@ args = ["--format", "json"]
 1. Download the binary for your platform from [Releases](https://github.com/tchebit/crowmemory-releases/releases)
 2. Make it executable: `chmod +x crow-memory-mcp-free-*`
 3. Move to your PATH: `sudo mv crow-memory-mcp-free-* /usr/local/bin/crow-memory-mcp`
-4. Add to your MCP client — for Claude Code:
-   ```bash
-   claude mcp add -s user crow-memory -- crow-memory-mcp
-   ```
+4. Add it to your MCP client — see [Install on Claude](#install-on-claude) below, or the docs for Zed, Cursor, Windsurf, etc.
+
+## Install on Claude
+
+CrowMemory works with both Claude Code (CLI/IDE) and Claude Desktop. Pick the one you use — you can add it to both, they share the same local memory brain.
+
+### Claude Code
+
+Run once, from anywhere:
+
+```bash
+claude mcp add -s user crow-memory -- crow-memory-mcp
+```
+
+- `-s user` registers it for every project (drop it, or use `-s project`, to scope it to the current project instead).
+- Verify it's connected: `claude mcp list` should show `crow-memory` as `connected`.
+- Restart any running `claude` sessions to pick it up.
+
+To use the Pro/Teams binary instead, point the same command at that binary's path (e.g. `-- /usr/local/bin/crow-memory-mcp-pro --enable-fts5`).
+
+### Claude Desktop
+
+Claude Desktop reads its MCP server list from a config file:
+
+| OS | Path |
+|---|---|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Linux | `~/.config/Claude/claude_desktop_config.json` |
+
+Create the file if it doesn't exist, and add (or merge into) the `mcpServers` block:
+
+```json
+{
+  "mcpServers": {
+    "crow-memory": {
+      "command": "/usr/local/bin/crow-memory-mcp"
+    }
+  }
+}
+```
+
+If the binary isn't on your `PATH`, use its full path in `command`. For the Pro/Teams binary, add the flag it needs:
+
+```json
+{
+  "mcpServers": {
+    "crow-memory": {
+      "command": "/usr/local/bin/crow-memory-mcp-pro",
+      "args": ["--enable-fts5"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop completely (quit, not just close the window) for the new server to load. You should see `crow-memory` listed under the MCP/plugin icon in a new chat.
 
 ## Claude Code: Auto-load Pinned Memories on Session Start
 
