@@ -73,6 +73,17 @@ args = ["--format", "json"]
 
 ## Quick Start
 
+### macOS / Linux (Homebrew)
+
+```bash
+brew tap tchebit/crowmemory
+brew install crow-memory-mcp
+```
+
+Then add it to your MCP client — see [Install on Claude](#install-on-claude) below, or the docs for Zed, Cursor, Windsurf, etc.
+
+### Manual download (all platforms, incl. Windows)
+
 1. Download the binary for your platform from [Releases](https://github.com/tchebit/crowmemory-releases/releases)
 2. Make it executable: `chmod +x crow-memory-mcp-free-*`
 3. Move to your PATH: `sudo mv crow-memory-mcp-free-* /usr/local/bin/crow-memory-mcp`
@@ -205,5 +216,6 @@ See [`skills/CONTRIBUTING.md`](./skills/CONTRIBUTING.md) for the format and guid
 ## Links
 
 - [Releases](https://github.com/tchebit/crowmemory-releases/releases)
+- [Homebrew tap](https://github.com/tchebit/homebrew-crowmemory)
 - [Website](https://crowmemory.ai)
 - [Report Issues](https://github.com/tchebit/crowmemory-releases/issues)
