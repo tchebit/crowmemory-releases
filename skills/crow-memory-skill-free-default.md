@@ -1,6 +1,6 @@
 # crow-memory-skill-free-default
 
-> Default skill for CrowMemory Free edition — teaches AI agents to use all 17 free tools effectively.
+> Default skill for CrowMemory Free edition — teaches AI agents to use all free tools effectively.
 
 ## When to use
 
@@ -14,11 +14,11 @@ You have access to CrowMemory, a persistent memory system that survives across s
 
 **Search before answering.** Before making assumptions about the project, search memory first. Call `recall` with specific technical keywords related to the topic. This prevents duplicating work and surfaces past decisions.
 
-**Store with structure.** When saving a decision, bug fix, task, or question, use `remember_with_metadata` with a type (context, decision, task, bug, question, agent) and relevant tags. Use plain `remember` only for quick unstructured notes.
+**Store with structure.** When saving a decision, bug fix, task, or question, pass `memory_type` (context, decision, task, bug, question, agent), `tags`, and optionally `priority` to `remember`. Omit them for a quick unstructured note.
 
-**Link as you go.** After storing a memory that relates to an existing one, call `link_memories` to connect them. Use relationship types like `fixes`, `answers`, `depends-on`, `supersedes`, `implements`, `related-to`. This builds a knowledge graph over time.
+**Link as you go.** After storing a memory that relates to an existing one, call `link_memories` to connect them. Use relationship types like `fixes`, `answers`, `depends-on`, `supersedes`, `implements`, `related-to`. This builds a knowledge graph over time. Use `unlink_memories` to undo a bad link.
 
-**Keep memory clean.** When you store an updated version of something already in memory, archive the old version with `archive_memory`. Stale entries pollute future recall results.
+**Keep memory clean.** When you store an updated version of something already in memory, archive the old version with `forget` (default is a soft delete/archive, not permanent). Stale entries pollute future recall results. `remember` also warns you when a near-duplicate memory already exists, so you can archive it instead of piling on.
 
 **Walk trails when investigating.** When tracing a bug or decision, call `get_related_memories` on any memory you find. Follow the links to build the full picture.
 
@@ -28,28 +28,24 @@ You have access to CrowMemory, a persistent memory system that survives across s
 
 **Start sessions with pinned context.** At the beginning of a session, call `get_pinned` to load always-relevant context before doing any work. This is the fastest way to recover orientation after a `/compact` or `/clear`, since Claude Code drops conversation state at those points but `get_pinned` reloads it explicitly. See [Auto-load pinned memories with a SessionStart hook](../README.md#claude-code-auto-load-pinned-memories-on-session-start) for wiring this up automatically.
 
-**Keep pins fresh.** Unpin outdated memories with `unpin_memory`. A cluttered pin list defeats the purpose. Pins should be a curated shortlist, not a dump.
+**Keep pins fresh.** Call `pin_memory(memory_id, pinned=false)` to unpin outdated memories. A cluttered pin list defeats the purpose. Pins should be a curated shortlist, not a dump.
 
 ### Memory organization
 
-**Scope by project.** CrowMemory shares one brain across all projects. Always include a `project:<id>` tag when storing (e.g. `project:my-api`), and prefix the memory text with `[project-id]` so search captures it. When recalling, include the project name in the query.
+**Scope by project.** CrowMemory shares one brain across all projects. `remember` scopes memories to the current project automatically (a `project:<slug>` tag and a `[slug]` text prefix), so you don't need to add these by hand. When recalling, include the project name in the query if you want to disambiguate.
 
-**Use tags for filtering.** Call `recall_by_tag` to scope searches to specific tags (project, session, feature area). Default mode is AND (all tags must match). Use OR mode when exploring across categories.
-
-**Use types for classification.** Call `recall_by_type` to find all memories of a specific type — all decisions, all bugs, all tasks. This is powerful for status reports and audits.
+**Use tags and types for filtering.** Pass `tags` and/or `memory_type` to `recall` to scope results — e.g. all memories tagged `auth`, or all memories of type `decision`. This works for status reports and audits ("show me every open task").
 
 ### Session continuity
 
-**Drop breadcrumbs.** After each significant action (bug fixed, feature shipped, decision made), store a breadcrumb using `remember_with_metadata` with type `context`, a `session:YYYY-MM-DD` tag, and the project tag. At session start, recall recent breadcrumbs to pick up where you left off.
+**Drop breadcrumbs.** After each significant action (bug fixed, feature shipped, decision made), call `remember` with `memory_type="context"`. A `session:YYYY-MM-DD` tag is added automatically. At session start, recall recent breadcrumbs to pick up where you left off.
 
-**Store pending work as tasks.** Use type `task` for work that isn't finished yet. Recover it later with `recall_by_type` or `recall_by_tag`.
+**Store pending work as tasks.** Use `memory_type="task"` for work that isn't finished yet. Recover it later with `recall(memory_type="task")`.
 
 ### Memory lifecycle
 
-- `archive_memory` — soft-delete outdated memories (recoverable)
-- `restore_memory` — bring back archived memories when needed
-- `forget` — permanently delete a memory (irreversible)
-- `update_memory` — modify the text of an existing memory in place
+- `forget` — remove a memory: soft-delete/archive by default (recoverable via direct lookup, hidden from search), `permanent=true` for irreversible hard delete
+- `update_memory` — modify the text and/or metadata (type, tags, priority) of an existing memory in place
 - `get_memory` — retrieve full details of a specific memory by ID
 - `list_memories` — browse all memories with pagination
 
@@ -67,22 +63,17 @@ Each memory has a 10,000 character limit. The embedding model indexes the first 
 
 ## Available tools
 
-- `remember` — store unstructured text
-- `remember_with_metadata` — store with type, tags, and priority
-- `recall` — semantic similarity search
-- `recall_by_type` — search filtered by memory type
-- `recall_by_tag` — search filtered by tags
+- `remember` — store a memory, optionally typed/tagged/prioritized; auto-scopes to project + session, warns on near-duplicates
+- `recall` — search (semantic, filterable by `memory_type` and/or `tags`)
+- `update_memory` — modify text and/or metadata of an existing memory
+- `forget` — archive (default) or permanently delete a memory
 - `list_memories` — paginated memory listing
 - `get_memory` — retrieve a specific memory
-- `update_memory` — modify existing memory text
-- `forget` — permanently delete
-- `archive_memory` — soft-delete
-- `restore_memory` — recover archived memory
-- `link_memories` — create relationships between memories
+- `link_memories` / `unlink_memories` — create or remove relationships between memories
 - `get_related_memories` — walk the knowledge graph
-- `pin_memory` / `unpin_memory` — mark a memory as always-relevant
-- `get_pinned` — retrieve all pinned memories
-- `init` — initialize CrowMemory in a project
+- `pin_memory` / `get_pinned` — mark a memory as always-relevant and retrieve pinned memories
+
+Run `crow-memory-mcp init` once per project to write the tier-specific system prompt file.
 
 ## Example
 

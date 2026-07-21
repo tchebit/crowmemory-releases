@@ -19,7 +19,7 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | **Knowledge Graph** | Link related memories into navigable decision trails |
 | **Agent Profiles** | Save and activate reusable agent personas across sessions |
 | **Pinned Memories** | Mark memories as always-on context, loaded explicitly via `get_pinned` |
-| **Memory Lifecycle** | Archive, restore, pin, and manage memory over time |
+| **Memory Lifecycle** | Archive (soft delete), pin, and manage memory over time |
 | **Temporal Queries** | Ask for memories by time — "yesterday", "last session", "before March" |
 | **Pair Sync** | Share encrypted context with teammates via secure relay (Pro) |
 | **Audit & Traceability** | Full observability into every AI memory operation (Pro) |
@@ -146,7 +146,7 @@ Restart Claude Desktop completely (quit, not just close the window) for the new 
 
 ## Claude Code: Auto-load Pinned Memories on Session Start
 
-`get_pinned` is not injected into `recall` results — it only surfaces pinned context when called explicitly. Claude Code also drops conversation state on `/compact`, `/resume`, and `/clear`, so wiring `get_pinned` into a `SessionStart` hook keeps your agent oriented at every one of those points, not just at first launch. This works on **every edition** — `pin_memory`, `unpin_memory`, and `get_pinned` are all free-tier tools.
+`get_pinned` is not injected into `recall` results — it only surfaces pinned context when called explicitly. Claude Code also drops conversation state on `/compact`, `/resume`, and `/clear`, so wiring `get_pinned` into a `SessionStart` hook keeps your agent oriented at every one of those points, not just at first launch. This works on **every edition** — `pin_memory` (pass `pinned: false` to unpin) and `get_pinned` are both free-tier tools.
 
 ### 1. Create the hook script
 
@@ -159,9 +159,9 @@ cat <<'MSG'
 [crow-memory protocol] Before doing anything else:
 1. Call mcp__crow-memory__get_pinned — load pinned context (architecture, conventions, must-know facts).
 2. Before implementing or answering about prior work, call mcp__crow-memory__recall
-   (or mcp__crow-memory__hybrid_recall on Pro/Teams) with project-specific keywords.
-3. After completing a unit of work, store it with mcp__crow-memory__remember_with_metadata
-   and link_memories to related entries.
+   with project-specific keywords (hybrid keyword+vector search is automatic on Pro/Teams).
+3. After completing a unit of work, store it with mcp__crow-memory__remember
+   (with memory_type/tags/priority) and link_memories to related entries.
 Do not ask whether to checkpoint — follow this protocol.
 MSG
 ```

@@ -4,7 +4,7 @@
 
 ## When to use
 
-This is the baseline skill for any AI agent using CrowMemory Pro or Teams. It includes everything from the free skill (pinned memories — `pin_memory`, `unpin_memory`, `get_pinned` — are free-tier tools, see the free skill) plus Pro-exclusive capabilities: hybrid search for precise keyword matching, encrypted pair sync for team collaboration, and structured event tracking for observability.
+This is the baseline skill for any AI agent using CrowMemory Pro or Teams. It includes everything from the free skill (pinned memories — `pin_memory`, `get_pinned` — are free-tier tools, see the free skill) plus Pro-exclusive capabilities: hybrid search fusion, encrypted pair sync for team collaboration, and structured event tracking for observability.
 
 ## Instructions
 
@@ -14,27 +14,21 @@ You have access to CrowMemory Pro, a persistent memory system with advanced sear
 
 **Search before answering.** Before making assumptions, search memory first. Call `recall` with specific technical keywords. This prevents duplicating work and surfaces past decisions.
 
-**Store with structure.** Use `remember_with_metadata` for decisions, bugs, tasks, and questions. Use plain `remember` only for quick notes.
+**Store with structure.** Pass `memory_type`, `tags`, and `priority` to `remember` for decisions, bugs, tasks, and questions. Omit them for quick notes.
 
-**Link as you go.** Call `link_memories` after storing related memories. Use relationship types: `fixes`, `answers`, `depends-on`, `supersedes`, `implements`, `related-to`.
+**Link as you go.** Call `link_memories` after storing related memories. Use relationship types: `fixes`, `answers`, `depends-on`, `supersedes`, `implements`, `related-to`. Use `unlink_memories` to undo a link.
 
-**Keep memory clean.** Archive old versions with `archive_memory` when storing updates.
+**Keep memory clean.** Archive old versions with `forget` (soft delete by default) when storing updates. `remember` also warns on near-duplicate content.
 
 **Walk trails.** Call `get_related_memories` to follow decision chains and debug trails.
 
-### Pro: Hybrid search
+### Pro: Hybrid search is automatic
 
-**Use hybrid search for exact matches.** When searching for specific identifiers, error codes, function names, or technical terms that must match exactly, use `hybrid_recall` instead of `recall`. It combines vector similarity with exact keyword matching for precise retrieval.
-
-**When to use which:**
-- `recall` — conceptual queries: "how does auth work", "database architecture decisions"
-- `hybrid_recall` — exact terms: "ERR_CONNECTION_REFUSED", "CoolingStorage", "vector_id u64", specific UUIDs
-
-**Fallback strategy.** If `hybrid_recall` returns nothing, fall back to `recall` with broader keywords. If `recall` returns too much noise, switch to `hybrid_recall` with the exact term.
+There is a single search tool, `recall`. With FTS5 enabled and a Pro/Teams license, `recall` automatically fuses vector similarity with exact keyword matching (RRF) — you never choose between "semantic" and "hybrid," and there is no separate tool or parameter for it. Just use specific technical keywords (error codes, function names, identifiers) in your query and the fusion picks them up naturally.
 
 ### Pinned memories (free tier — see free skill for details)
 
-Use `pin_memory` / `get_pinned` for always-on context and `unpin_memory` to keep the pin list curated. These are free-tier tools, not Pro-exclusive.
+Use `pin_memory` / `get_pinned` for always-on context. Call `pin_memory(memory_id, pinned=false)` to unpin. These are free-tier tools, not Pro-exclusive.
 
 ### Pro: Pair Sync
 
@@ -49,25 +43,21 @@ Use `pin_memory` / `get_pinned` for always-on context and `unpin_memory` to keep
 
 ### Memory organization
 
-**Scope by project.** Include a `project:<id>` tag when storing and prefix text with `[project-id]`. Include the project name in queries. For `hybrid_recall`, the keyword component matches the prefix naturally.
+**Scope by project.** `remember` auto-scopes memories to the current project (`project:<slug>` tag, `[slug]` text prefix) — no manual tagging needed. Include the project name in queries if you want to disambiguate; the keyword-fusion component of `recall` matches the prefix naturally.
 
-**Use tags for filtering.** `recall_by_tag` scopes searches to specific tags. AND mode (default) requires all tags. OR mode explores across categories.
-
-**Use types for classification.** `recall_by_type` finds all memories of a given type — decisions, bugs, tasks, questions, agent profiles.
+**Use tags and types for filtering.** Pass `tags` and/or `memory_type` to `recall` — e.g. all memories tagged a feature area, or all memories of type `decision`/`bug`/`task`.
 
 ### Session continuity
 
-**Drop breadcrumbs.** After significant actions, store a breadcrumb with `remember_with_metadata` using type `context`, tag `session:YYYY-MM-DD`, and the project tag. At session start, recall recent breadcrumbs to resume.
+**Drop breadcrumbs.** After significant actions, call `remember` with `memory_type="context"` — a `session:YYYY-MM-DD` tag is added automatically. At session start, recall recent breadcrumbs to resume.
 
 **Start with pins + breadcrumbs.** Call `get_pinned` for always-on context, then recall recent breadcrumbs for session-specific state.
 
 ### Memory lifecycle
 
-- `archive_memory` / `restore_memory` — soft-delete and recover
-- `forget` — permanent delete
-- `update_memory` — modify text in place
-- `pin_memory` / `unpin_memory` — mark as always-relevant (free tier)
-- `get_pinned` — retrieve all pinned memories (free tier)
+- `forget` — archive (default, recoverable via direct lookup) or `permanent=true` for hard delete
+- `update_memory` — modify text and/or metadata (type, tags, priority) in place
+- `pin_memory` / `get_pinned` — mark as always-relevant / retrieve pinned (free tier)
 
 ### Temporal awareness
 
@@ -83,19 +73,17 @@ Never store credentials in memory. Reference by location only.
 
 ## Available tools
 
-**Free tools (17):**
-- `remember`, `remember_with_metadata` — store memories
-- `recall`, `recall_by_type`, `recall_by_tag` — search memories
+**Free tools:**
+- `remember`, `recall` — store and search memories
 - `list_memories`, `get_memory` — browse and retrieve
-- `update_memory`, `forget` — modify and delete
-- `archive_memory`, `restore_memory` — lifecycle management
-- `link_memories`, `get_related_memories` — knowledge graph
-- `pin_memory`, `unpin_memory`, `get_pinned` — pinned memory management
-- `init` — project initialization
+- `update_memory`, `forget` — modify and delete (archive or permanent)
+- `link_memories`, `unlink_memories`, `get_related_memories` — knowledge graph
 
-**Pro tools (3):**
-- `hybrid_recall` — vector + keyword fusion search
+**Pro tools:**
+- `pin_memory`, `get_pinned` — pinned memory management
 - `pair_share`, `pair_receive` — encrypted context sharing
+
+`recall`'s hybrid keyword+vector fusion is a Pro/Teams runtime behavior, not a separate tool.
 
 ## Example
 
@@ -103,7 +91,7 @@ Never store credentials in memory. Reference by location only.
 User: "What was that ERR_SSL_PROTOCOL_ERROR we fixed last week?"
 
 Agent:
-1. hybrid_recall("ERR_SSL_PROTOCOL_ERROR") — exact keyword match
+1. recall("ERR_SSL_PROTOCOL_ERROR") — hybrid fusion matches the exact code
 2. Finds the bug memory with root cause and fix
 3. get_related_memories — discovers linked decision about cert rotation
 4. Answers with full context: the error, root cause, fix, and related decision

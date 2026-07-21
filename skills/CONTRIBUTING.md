@@ -34,7 +34,7 @@ Describe the scenario or trigger for this skill.
 ## Instructions
 
 The prompt instructions that teach the AI agent the workflow.
-Reference CrowMemory tools by name (remember, recall, hybrid_recall, etc.)
+Reference CrowMemory tools by name (remember, recall, link_memories, etc.)
 but do not include tool signatures or implementation details.
 
 ## Example
