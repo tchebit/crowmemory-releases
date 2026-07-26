@@ -1,3 +1,5 @@
+![CrowMemory](assets/banner.jpg)
+
 # CrowMemory MCP
 
 Persistent memory for AI agents. Works with any MCP-compatible client — Claude Code, Zed, Cursor, Windsurf, Claude Desktop, and more.
