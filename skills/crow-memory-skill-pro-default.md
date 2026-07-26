@@ -80,9 +80,10 @@ Never store credentials in memory. Reference by location only.
 - `list_memories`, `get_memory` — browse and retrieve
 - `update_memory`, `forget` — modify and delete (archive or permanent)
 - `link_memories`, `unlink_memories`, `get_related_memories` — knowledge graph
+- `pin_memory`, `get_pinned` — pinned memory management
+- `handoff_push`, `handoff_pop`, `handoff_read`, `handoff_channels` — agent-to-agent handoff channels
 
 **Pro tools:**
-- `pin_memory`, `get_pinned` — pinned memory management
 - `pair_share`, `pair_receive` — encrypted context sharing
 
 `recall`'s hybrid keyword+vector fusion is a Pro/Teams runtime behavior, not a separate tool.
