@@ -17,6 +17,7 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | **Semantic Memory** | Store and recall context using vector similarity search |
 | **Hybrid Search** | Combine semantic and keyword search for precise retrieval (Pro) |
 | **Knowledge Graph** | Link related memories into navigable decision trails |
+| **Handoff Channels** | Hand ephemeral tasks between agents (and humans) — queue or broadcast, isolated from search |
 | **Agent Profiles** | Save and activate reusable agent personas across sessions |
 | **Pinned Memories** | Mark memories as always-on context, loaded explicitly via `get_pinned` |
 | **Memory Lifecycle** | Archive (soft delete), pin, and manage memory over time |
@@ -33,6 +34,7 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | Semantic memory + knowledge graph | Yes | Yes | Yes |
 | Shared memory across agents | Yes | Yes | Yes |
 | Pinned memories (`pin_memory`, `get_pinned`) | Yes | Yes | Yes |
+| Handoff Channels (agent-to-agent relay) | Yes | Yes | Yes |
 | Hybrid search (semantic + keyword) | — | Yes | Yes |
 | Pair Sync (encrypted sharing) | — | Yes | Yes |
 | Audit & traceability | — | Yes | Yes |

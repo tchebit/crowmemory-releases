@@ -53,6 +53,19 @@ You have access to CrowMemory, a persistent memory system that survives across s
 
 Every recall result includes a `created_at` timestamp. Use it to resolve time questions: "last session" means the most recent cluster by date, "yesterday" means the previous calendar day (UTC), "recently" means the last 7 days.
 
+### Handoff Channels — passing work between agents
+
+`recall`/`remember` are long-term memory. **Handoff Channels** are the opposite: ephemeral messages that hand a task from one agent to another (or to a human) without copying memory ids between chat sessions. They live in an isolated store and **never appear in `recall`**.
+
+A handoff is an envelope: `refs` (memory ids it points to, resolved live) + `note` (a short instruction). Store durable content with `remember`, then reference its id in `refs` — don't copy content into the handoff. Channels are addressed by `(scope, channel)`; `scope` defaults to the project.
+
+**Pick the mode by how it's consumed:**
+- One agent should take it, then it's done → push with `mode="queue"` (default); the other agent takes it with `handoff_pop` (destructive, first taker wins).
+- Many agents each see it, or you need replay / request-response (PING/PONG) → push with `mode="topic"`; consumers `handoff_read` without consuming, tracking position with a per-channel watermark (`since` → reuse the returned `next_since`).
+- **Don't watermark a queue** — `pop` consumes it; watermarks are for topics.
+
+Entries expire after a TTL (default 72h — push first, start the consumer later). On a queue, `to`/`as` address an entry to a role so agents sharing a folder don't self-pop. A `key` gives latest-value-wins (same-key push supersedes); a keyed push with no refs/note retracts (tombstone). An empty pop/read explains why and lists the other live channels.
+
 ### Security
 
 Never store passwords, API keys, tokens, or credentials in memory. Reference them by location (e.g. "see .env") — never by value.
@@ -72,6 +85,10 @@ Each memory has a 10,000 character limit. The embedding model indexes the first 
 - `link_memories` / `unlink_memories` — create or remove relationships between memories
 - `get_related_memories` — walk the knowledge graph
 - `pin_memory` / `get_pinned` — mark a memory as always-relevant and retrieve pinned memories
+- `handoff_push` — queue or broadcast an ephemeral handoff (`refs` + `note`) to another agent; `mode="queue"` (one taker) or `mode="topic"` (broadcast)
+- `handoff_pop` — take the oldest entry off a queue channel (destructive, first taker wins)
+- `handoff_read` — read a topic (or peek a queue) without consuming; watermark with `since`/`next_since`
+- `handoff_channels` — list channels in a scope with their mode and live depth
 
 Run `crow-memory-mcp init` once per project to write the tier-specific system prompt file.
 
