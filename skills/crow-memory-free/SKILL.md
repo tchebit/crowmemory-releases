@@ -1,4 +1,9 @@
-# crow-memory-skill-free-default
+---
+name: crow-memory-free
+description: Use CrowMemory's memory tools correctly on the Free edition — search before answering, store with the right memory_type, link related memories into a decision trail, keep memory clean, and hand work to another agent over a handoff channel. Load this at the start of any session using mcp__crow-memory__* tools.
+---
+
+# CrowMemory — Free edition
 
 > Default skill for CrowMemory Free edition — teaches AI agents to use all free tools effectively.
 

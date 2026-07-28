@@ -1,4 +1,9 @@
-# crow-memory-skill-pro-default
+---
+name: crow-memory-pro
+description: Use CrowMemory's memory tools correctly on Pro or Teams — everything in the free skill plus automatic hybrid search and encrypted pair sync for sharing context with teammates. Load this at the start of any session using mcp__crow-memory__* tools on a Pro or Teams license.
+---
+
+# CrowMemory — Pro edition
 
 > Default skill for CrowMemory Pro edition — extends the free skill with hybrid search, pair sync, and event tracking.
 

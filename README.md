@@ -209,13 +209,63 @@ get_pinned()                    # verify what's loaded
 
 Keep the pin list to a curated shortlist — critical guardrails and conventions, not a dump of everything you've ever stored.
 
-## Community Skills
+## Skills
 
-CrowMemory supports community-contributed skills — reusable prompt patterns that teach AI agents specialized workflows on top of CrowMemory.
+The MCP server gives an agent the memory *tools*. A skill teaches it when and how
+to use them — search before answering, pick the right `memory_type`, link related
+memories into a trail rather than leaving them as a flat pile. Optional, but the
+difference is large enough that it's worth the two minutes.
 
-Browse available skills in the [`skills/`](./skills) folder, or **contribute your own** by opening a PR.
+Two ship here, matching the editions:
 
-See [`skills/CONTRIBUTING.md`](./skills/CONTRIBUTING.md) for the format and guidelines.
+| Skill | For |
+|---|---|
+| [`crow-memory-free`](./skills/crow-memory-free) | Free edition — the memory tools, the knowledge graph, handoff channels |
+| [`crow-memory-pro`](./skills/crow-memory-pro) | Pro / Teams — adds hybrid search and encrypted pair sync |
+
+### Install into Claude Code
+
+Skills live in a folder named after the skill, containing a `SKILL.md`. Pick a
+scope:
+
+| Scope | Path | Applies to |
+|---|---|---|
+| Personal | `~/.claude/skills/<name>/SKILL.md` | every project you work on |
+| Project | `.claude/skills/<name>/SKILL.md` | that repo only — commit it, and your team gets it |
+
+Personal install, Free edition:
+
+```bash
+mkdir -p ~/.claude/skills/crow-memory-free
+curl -fsSL https://raw.githubusercontent.com/tchebit/crowmemory-releases/master/skills/crow-memory-free/SKILL.md \
+  -o ~/.claude/skills/crow-memory-free/SKILL.md
+```
+
+Pro / Teams — same thing, swap the name:
+
+```bash
+mkdir -p ~/.claude/skills/crow-memory-pro
+curl -fsSL https://raw.githubusercontent.com/tchebit/crowmemory-releases/master/skills/crow-memory-pro/SKILL.md \
+  -o ~/.claude/skills/crow-memory-pro/SKILL.md
+```
+
+Project-scoped instead — run it from the repo root and use `.claude/skills/` in
+place of `~/.claude/skills/`.
+
+Restart `claude`, then run `/skills` to confirm it's listed. You don't invoke it
+by hand: Claude reads the `description` in the frontmatter and loads the skill
+itself when the work calls for it.
+
+### Install into Claude Desktop
+
+Claude Desktop has no skills folder. Paste the body of `SKILL.md` (everything
+below the `---` frontmatter block) into your project instructions instead.
+
+### Contribute one
+
+Skills are reusable prompt patterns — code review, bug triage, onboarding, an
+architecture log. Open a PR; see [`skills/CONTRIBUTING.md`](./skills/CONTRIBUTING.md)
+for the format.
 
 ## Links
 
