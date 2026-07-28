@@ -22,11 +22,11 @@ You have access to CrowMemory Pro, a persistent memory system with advanced sear
 
 **Walk trails.** Call `get_related_memories` to follow decision chains and debug trails.
 
-**Hand off work.** Use Handoff Channels (`handoff_push` / `handoff_pop` / `handoff_read` / `handoff_channels`) to pass an ephemeral task to another agent or a human — a queue for one-taker relay, a topic for broadcast or request/response. These are free-tier tools; see the free skill for the full model (envelope of `refs`+`note`, queue-vs-topic, watermarks, TTL, `to`/`as`, dedup `key`).
+**Hand off work.** Use Handoff Channels (`handoff_push` / `handoff_pop` / `handoff_read` / `handoff_channels`) to pass an ephemeral task to another agent or a human — a queue for one-taker relay, a topic for broadcast or request/response. Channels are addressed by `(scope, channel)` and `scope` defaults to the current project, so agents in different folders don't share a channel unless both pass the same scope — when handing off across sub-projects, communicate the scope alongside the channel name. These are free-tier tools; see the free skill for the full model (envelope of `refs`+`note`, queue-vs-topic, watermarks, TTL, `to`/`as`, dedup `key`).
 
 ### Pro: Hybrid search is automatic
 
-There is a single search tool, `recall`. With FTS5 enabled and a Pro/Teams license, `recall` automatically fuses vector similarity with exact keyword matching (RRF) — you never choose between "semantic" and "hybrid," and there is no separate tool or parameter for it. Just use specific technical keywords (error codes, function names, identifiers) in your query and the fusion picks them up naturally.
+There is a single search tool, `recall`. On a Pro or Teams license it automatically combines meaning-based matching with exact keyword matching — you never choose between "semantic" and "hybrid," and there is no separate tool or parameter for it. Just use specific technical keywords (error codes, function names, identifiers) in your query and they will be picked up naturally alongside conceptually similar results.
 
 ### Pinned memories (free tier — see free skill for details)
 
@@ -86,7 +86,7 @@ Never store credentials in memory. Reference by location only.
 **Pro tools:**
 - `pair_share`, `pair_receive` — encrypted context sharing
 
-`recall`'s hybrid keyword+vector fusion is a Pro/Teams runtime behavior, not a separate tool.
+`recall`'s combined keyword and meaning-based matching is a Pro/Teams runtime behavior, not a separate tool.
 
 ## Example
 

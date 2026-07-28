@@ -57,14 +57,20 @@ Every recall result includes a `created_at` timestamp. Use it to resolve time qu
 
 `recall`/`remember` are long-term memory. **Handoff Channels** are the opposite: ephemeral messages that hand a task from one agent to another (or to a human) without copying memory ids between chat sessions. They live in an isolated store and **never appear in `recall`**.
 
-A handoff is an envelope: `refs` (memory ids it points to, resolved live) + `note` (a short instruction). Store durable content with `remember`, then reference its id in `refs` — don't copy content into the handoff. Channels are addressed by `(scope, channel)`; `scope` defaults to the project.
+A handoff is an envelope: `refs` (memory ids it points to, resolved live) + `note` (a short instruction). Store durable content with `remember`, then reference its id in `refs` — don't copy content into the handoff.
+
+**A channel is addressed by `(scope, channel)` — the channel name alone is not an address.** `scope` defaults to the current project, which is derived from the folder the agent is running in. Two agents started from different folders therefore do **not** share a channel unless both pass the same `scope`. This is the most common way a handoff goes missing: one agent pushes to `review`, tells the other "it's on the review channel", and the second agent looks in its own scope and finds nothing.
+
+- Handing off **within** one project? Ignore `scope`; the default is right.
+- Handing off **across** sub-projects or folders? Agree on an explicit shared `scope` and pass it along **with** the channel name — the channel name on its own is not enough for the other agent to find it.
+- Told a channel name but it looks empty? Call `handoff_channels` with `all_scopes: true` to see every scope before concluding nothing was sent. An empty pop/read will also tell you when the channel has entries under a different scope, and name it — retry the same call with that scope.
 
 **Pick the mode by how it's consumed:**
 - One agent should take it, then it's done → push with `mode="queue"` (default); the other agent takes it with `handoff_pop` (destructive, first taker wins).
 - Many agents each see it, or you need replay / request-response (PING/PONG) → push with `mode="topic"`; consumers `handoff_read` without consuming, tracking position with a per-channel watermark (`since` → reuse the returned `next_since`).
 - **Don't watermark a queue** — `pop` consumes it; watermarks are for topics.
 
-Entries expire after a TTL (default 72h — push first, start the consumer later). On a queue, `to`/`as` address an entry to a role so agents sharing a folder don't self-pop. A `key` gives latest-value-wins (same-key push supersedes); a keyed push with no refs/note retracts (tombstone). An empty pop/read explains why and lists the other live channels.
+Entries expire after a TTL (default 72h — push first, start the consumer later). On a queue, `to`/`as` address an entry to a role so agents sharing a folder don't self-pop. A `key` gives latest-value-wins (same-key push supersedes); a keyed push with no refs/note retracts (tombstone). An empty pop/read explains why: whether you popped a topic, read past your watermark, hit entries reserved for another role, or are looking in the wrong scope — read that explanation and correct the call rather than assuming nothing was sent.
 
 ### Security
 
@@ -88,7 +94,7 @@ Each memory has a 10,000 character limit. The embedding model indexes the first 
 - `handoff_push` — queue or broadcast an ephemeral handoff (`refs` + `note`) to another agent; `mode="queue"` (one taker) or `mode="topic"` (broadcast)
 - `handoff_pop` — take the oldest entry off a queue channel (destructive, first taker wins)
 - `handoff_read` — read a topic (or peek a queue) without consuming; watermark with `since`/`next_since`
-- `handoff_channels` — list channels in a scope with their mode and live depth
+- `handoff_channels` — list channels in a scope with their mode and live depth; pass `all_scopes` to find a handoff pushed from another folder
 
 Run `crow-memory-mcp init` once per project to write the tier-specific system prompt file.
 
