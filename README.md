@@ -148,6 +148,38 @@ If the binary isn't on your `PATH`, use its full path in `command`. For the Pro/
 
 Restart Claude Desktop completely (quit, not just close the window) for the new server to load. You should see `crow-memory` listed under the MCP/plugin icon in a new chat.
 
+## Claude Code: Hand Work From One Session to the Next
+
+Stop work in one session, start another an hour later, and everything the first
+one learned is gone. One command wires that up:
+
+```bash
+crow-memory-mcp install-hooks
+```
+
+Run it once per project. From then on, ending a session writes a handoff, and the
+next session in that project is given it **before its first prompt** — no tool
+call, no prompting, nothing to remember.
+
+What it hands over is facts, not a generated summary: the memories that session
+stored, the last thing you actually asked, and the files it touched. The memories
+are the substance — they are pointers resolved live when the next session reads
+them, so the handoff cannot go stale.
+
+Details worth knowing:
+
+- It merges into `.claude/settings.json`, keeps hooks you already have, and is
+  safe to re-run. It refuses to touch a settings file whose JSON it can't parse.
+- A session that stored nothing, touched nothing and was asked nothing hands over
+  **nothing** — a block that is usually noise teaches the next session to ignore
+  it.
+- The hooks don't load the embedding model, so they add no startup cost.
+- Free edition, fully local.
+
+This is independent of the pinned-memory hook below; both can be installed, and
+they answer different questions — *what always matters* versus *what just
+happened*.
+
 ## Claude Code: Auto-load Pinned Memories on Session Start
 
 `get_pinned` is not injected into `recall` results — it only surfaces pinned context when called explicitly. Claude Code also drops conversation state on `/compact`, `/resume`, and `/clear`, so wiring `get_pinned` into a `SessionStart` hook keeps your agent oriented at every one of those points, not just at first launch. This works on **every edition** — `pin_memory` (pass `pinned: false` to unpin) and `get_pinned` are both free-tier tools.
@@ -222,6 +254,13 @@ Two ship here, matching the editions:
 |---|---|
 | [`crow-memory-free`](./skills/crow-memory-free) | Free edition — the memory tools, the knowledge graph, handoff channels |
 | [`crow-memory-pro`](./skills/crow-memory-pro) | Pro / Teams — adds hybrid search and encrypted pair sync |
+
+A third, **crow-memory-handoff**, is not listed here because you don't install it
+by hand: `crow-memory-mcp init` writes it into `.claude/skills/` for you. It ships
+inside the server binary and covers handoff channels in full — leases, ack/nack,
+addressing. Because it is versioned with the server, it can't drift out of step
+with the tool surface, so trust it over the summaries in the skills above if the
+two ever disagree.
 
 ### Install into Claude Code
 

@@ -65,11 +65,17 @@ Every recall result includes a `created_at` timestamp. Use it to resolve time qu
 A handoff is an envelope: `refs` (memory ids it points to, resolved live) + `note` (a short instruction). Store durable content with `remember`, then reference its id in `refs` — don't copy content into the handoff. The channel name is the whole address — channel names are global across every project sharing a brain.
 
 **Pick the mode by how it's consumed:**
-- One agent should take it, then it's done → push with `mode="queue"` (default); the other agent takes it with `handoff_pop` (destructive, first taker wins).
+- One agent should take it, then it's done → push with `mode="queue"` (default); the other agent claims it with `handoff_pop` (first matching taker wins).
 - Many agents each see it, or you need replay / request-response (PING/PONG) → push with `mode="topic"`; consumers `handoff_read` without consuming, tracking position with a per-channel watermark (`since` → reuse the returned `next_since`).
-- **Don't watermark a queue** — `pop` consumes it; watermarks are for topics.
+- **Don't watermark a queue** — `pop` claims it; watermarks are for topics.
 
-Entries expire after a TTL (default 72h — push first, start the consumer later). On a queue, `to`/`as` address an entry to a role so agents sharing a folder don't self-pop. A `key` gives latest-value-wins (same-key push supersedes); a keyed push with no refs/note retracts (tombstone). An empty pop/read explains why and lists the other live channels.
+**A pop is a loan, not a transfer.** The entry is *leased* to you (default 300s), not deleted. The claim ends when you pop that channel again (which acks what you were holding), when you call `handoff_ack`, when you call `handoff_nack` to give it back, or when the lease lapses — in which case the entry is redelivered to someone else. So a crash loses nothing. If a popped entry shows `deliveries` greater than 1, an earlier consumer abandoned it: check for half-finished work before starting over. If you know you can't do the work, `handoff_nack` rather than walking away.
+
+Entries expire after a TTL (default 72h — push first, start the consumer later). On a queue, `to`/`as` address an entry to a role so agents sharing a folder don't self-pop. A `key` gives latest-value-wins (same-key push supersedes); a keyed push with no payload retracts (tombstone). Put concrete follow-ups in `actions` and unknowns in `unresolved` rather than burying them in `note`. A handoff belongs to the operator who pushed it — pass `shared: true` to let anyone on the brain claim it. An empty pop/read explains why, distinguishing "nothing here" from "everything is leased to someone else", and lists the other live channels.
+
+**Sessions can hand over by themselves.** If `crow-memory-mcp install-hooks` has been run in a project, ending a session writes a handoff on `session:<project>` and the next session receives it before its first prompt. When such a block is already in your context, act on it — don't pop that channel looking for another copy, it has already been consumed.
+
+> `crow-memory-mcp init` also installs a dedicated **crow-memory-handoff** skill with the full model. That skill is versioned with the server, so prefer it over this summary if the two ever disagree.
 
 ### Security
 
@@ -90,12 +96,13 @@ Each memory has a 10,000 character limit. The embedding model indexes the first 
 - `link_memories` / `unlink_memories` — create or remove relationships between memories
 - `get_related_memories` — walk the knowledge graph
 - `pin_memory` / `get_pinned` — mark a memory as always-relevant and retrieve pinned memories
-- `handoff_push` — queue or broadcast an ephemeral handoff (`refs` + `note`) to another agent; `mode="queue"` (one taker) or `mode="topic"` (broadcast)
-- `handoff_pop` — take the oldest entry off a queue channel (destructive, first taker wins)
+- `handoff_push` — queue or broadcast an ephemeral handoff to another agent; envelope of `refs` + `note`, plus `actions` / `unresolved`; `mode="queue"` (one taker) or `mode="topic"` (broadcast); `shared: true` to let any operator claim it
+- `handoff_pop` — claim the oldest entry off a queue channel (first matching taker wins). Leased, not deleted — see the loan rule above; `lease_secs` to hold it longer
+- `handoff_ack` / `handoff_nack` — finish a claim (delete it) or hand it straight back. Optional: popping the same channel again acks what you held
 - `handoff_read` — read a topic (or peek a queue) without consuming; watermark with `since`/`next_since`
-- `handoff_channels` — list channels with their mode and live depth
+- `handoff_channels` — list channels with their mode, `depth` (claimable now) and `in_flight` (claimed, not yet acked)
 
-Run `crow-memory-mcp init` once per project to write the tier-specific system prompt file.
+Run `crow-memory-mcp init` once per project. It writes the tier-specific system prompt file and installs the **crow-memory-handoff** skill. Run `crow-memory-mcp install-hooks` as well to have sessions hand over to each other automatically.
 
 ## Example
 
