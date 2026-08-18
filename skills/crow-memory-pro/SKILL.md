@@ -27,7 +27,7 @@ You have access to CrowMemory Pro, a persistent memory system with advanced sear
 
 **Walk trails.** Call `get_related_memories` to follow decision chains and debug trails.
 
-**Hand off work.** Use Handoff Channels (`handoff_push` / `handoff_pop` / `handoff_read` / `handoff_channels`) to pass an ephemeral task to another agent or a human — a queue for one-taker relay, a topic for broadcast or request/response. These are free-tier tools; see the free skill for the full model (envelope of `refs`+`note`, queue-vs-topic, watermarks, TTL, `to`/`as`, dedup `key`).
+**Hand off work.** Use Handoff Channels (`handoff_push` / `handoff_pop` / `handoff_ack` / `handoff_nack` / `handoff_read` / `handoff_channels`) to pass an ephemeral task to another agent or a human — a queue for one-taker relay, a topic for broadcast or request/response. A pop **leases** the entry rather than deleting it: finish and it clears when you ack or pop again, abandon it and it is redelivered. These are free-tier tools; the **crow-memory-handoff** skill installed by `crow-memory-mcp init` carries the full model.
 
 ### Pro: Hybrid search is automatic
 
@@ -86,7 +86,7 @@ Never store credentials in memory. Reference by location only.
 - `update_memory`, `forget` — modify and delete (archive or permanent)
 - `link_memories`, `unlink_memories`, `get_related_memories` — knowledge graph
 - `pin_memory`, `get_pinned` — pinned memory management
-- `handoff_push`, `handoff_pop`, `handoff_read`, `handoff_channels` — agent-to-agent handoff channels
+- `handoff_push`, `handoff_pop`, `handoff_ack`, `handoff_nack`, `handoff_read`, `handoff_channels` — agent-to-agent handoff channels (a pop is a lease; ack, nack, or pop again to end the claim)
 
 **Pro tools:**
 - `pair_share`, `pair_receive` — encrypted context sharing
