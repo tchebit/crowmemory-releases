@@ -31,7 +31,9 @@ You have access to CrowMemory Pro, a persistent memory system with advanced sear
 
 ### Pro: Hybrid search is automatic
 
-There is a single search tool, `recall`. On a Pro or Teams license it automatically combines meaning-based matching with exact keyword matching — you never choose between "semantic" and "hybrid," and there is no separate tool or parameter for it. Just use specific technical keywords (error codes, function names, identifiers) in your query and they will be picked up naturally alongside conceptually similar results.
+There is a single search tool, `recall`. On a Pro or Teams license an **unfiltered** query automatically combines meaning-based matching with exact keyword matching — you never choose between "semantic" and "hybrid," and there is no separate tool or parameter for it. Just use specific technical keywords (error codes, function names, identifiers) and they will be picked up alongside conceptually similar results.
+
+A query that passes `memory_type` or `tags` takes a different path and is **vector-only**, so exact-token matching does not apply to it. In exchange that path is exhaustive: the filter selects first and similarity only orders what it selected, so every memory matching the filter is a candidate. If you need an error code matched exactly, query for it without a filter.
 
 ### Pinned memories (free tier — see free skill for details)
 
