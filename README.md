@@ -17,7 +17,7 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | Capability | Description |
 |---|---|
 | **Semantic Memory** | Store and recall context using vector similarity search |
-| **Hybrid Search** | Combine semantic and keyword search for precise retrieval (Pro) |
+| **Hybrid Search** | Unfiltered queries combine semantic and keyword search; a query filtered by type or tag is vector-only (Pro) |
 | **Knowledge Graph** | Link related memories into navigable decision trails |
 | **Handoff Channels** | Hand ephemeral tasks between agents (and humans) — queue or broadcast, isolated from search |
 | **Agent Profiles** | Save and activate reusable agent personas across sessions |
@@ -27,7 +27,7 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | **Pair Sync** | Share encrypted context with teammates via secure relay (Pro) |
 | **Audit & Traceability** | Full observability into every AI memory operation (Pro) |
 | **Tag & Type Filtering** | Organize memories by type (decision, bug, task, question) and custom tags |
-| **Credential Guardrail** | Secrets are never stored — referenced by location only |
+| **Credential Guardrail** | The agent is instructed never to store secrets, and to reference them by location instead. Advisory: nothing scans or blocks what you store |
 
 ## Editions
 
@@ -195,7 +195,8 @@ cat <<'MSG'
 [crow-memory protocol] Before doing anything else:
 1. Call mcp__crow-memory__get_pinned — load pinned context (architecture, conventions, must-know facts).
 2. Before implementing or answering about prior work, call mcp__crow-memory__recall
-   with project-specific keywords (hybrid keyword+vector search is automatic on Pro/Teams).
+   with project-specific keywords (on Pro/Teams an unfiltered query also matches keywords;
+   filtering by type or tag makes it vector-only).
 3. After completing a unit of work, store it with mcp__crow-memory__remember
    (with memory_type/tags/priority) and link_memories to related entries.
 Do not ask whether to checkpoint — follow this protocol.
