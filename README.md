@@ -28,6 +28,54 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | **Audit & Traceability** | Full observability into every AI memory operation (Pro) |
 | **Tag & Type Filtering** | Organize memories by type (decision, bug, task, question) and custom tags |
 | **Credential Guardrail** | The agent is instructed never to store secrets, and to reference them by location instead. Advisory: nothing scans or blocks what you store |
+| **Handoff from a shell** | Push, claim and complete handoffs with the `handoff` command — for scripts, timers, and agents that do not speak MCP |
+| **Wake an idle agent** | A background watcher starts the agent you configured when a handoff has been waiting, so work does not sit until someone happens to look |
+| **Verify your install** | `crow-memory-mcp verify` checks the documented guarantees against the binary you have and tells you which ones held |
+
+## New in 0.4.0
+
+**Handoffs work outside MCP.** `crow-memory-mcp handoff push|pop|ack|nack|read|channels`
+gives a script, a timer, or an agent that does not speak MCP the same queue the
+MCP tools use — with exit codes and `--json` so nothing has to parse prose.
+
+**An idle agent can be woken.** A handoff used to sit until somebody happened to
+look. `crow-memory-mcp watch` starts the agent you configured when work has been
+waiting, and installs itself into systemd, launchd or Task Scheduler with
+`watch --install`. It only ever wakes an agent you have explicitly marked as safe
+to run unattended, and it tells that agent it was started automatically, so a
+handoff is treated as a request to check rather than as authorisation.
+
+**Session hooks for Gemini CLI and Codex**, alongside Claude Code, and
+`install-hooks --global` to cover every project at once.
+
+**You can check the guarantees instead of trusting them.**
+`crow-memory-mcp verify` runs the documented handoff rules against your own
+binary and reports which held. The documentation now also separates what is
+*enforced* — the tool will not let you break it — from what is *advisory*, which
+is exactly the distinction that is invisible in prose and expensive to learn by
+experiment.
+
+**Long memories say when they are too long.** Storing text past the model's
+indexing window now warns and reports how much of it is searchable, instead of
+accepting it silently. Everything is still stored and returned in full; only
+meaning-based search is affected.
+
+**Duplicate detection no longer suggests deleting the wrong thing.** Two long
+memories that begin alike are compared in full before either is called a
+duplicate, and a pair that merely shares an opening is reported without any
+suggestion to remove one.
+
+### Fixes worth knowing about
+
+- Searching with a type or tag filter now returns every match, rather than only
+  those that happened to rank highly for the query. On a large brain this could
+  return almost nothing.
+- Two agents sharing one brain can no longer overwrite each other's memories.
+- A running agent now picks up memories written by another agent as they arrive.
+- Starting two agents against the same brain at the same moment no longer risks
+  one of them failing to start.
+- Handoffs record which agent released a claim, so abandoned work says who left
+  it.
 
 ## Editions
 
@@ -37,6 +85,7 @@ CrowMemory gives AI agents long-term memory that persists across sessions, proje
 | Shared memory across agents | Yes | Yes | Yes |
 | Pinned memories (`pin_memory`, `get_pinned`) | Yes | Yes | Yes |
 | Handoff Channels (agent-to-agent relay) | Yes | Yes | Yes |
+| Handoff CLI, wake daemon, `verify` | Yes | Yes | Yes |
 | Hybrid search (semantic + keyword) | — | Yes | Yes |
 | Pair Sync (encrypted sharing) | — | Yes | Yes |
 | Audit & traceability | — | Yes | Yes |
